@@ -95,6 +95,48 @@ const obtenerBajoStock = async (req, res) => {
   }
 };
 
+// PUT /hemocomponentes/actualizar-stock
+const actualizarStockMasivo = async (req, res) => {
+  try {
+    const { hemocomponentes } = req.body;
+
+    if (!Array.isArray(hemocomponentes) || hemocomponentes.length === 0) {
+      return res.status(400).json({
+        mensaje: 'Se espera un array de hemocomponentes con id y cantidad'
+      });
+    }
+
+    const resultados = [];
+    const errores = [];
+
+    for (const item of hemocomponentes) {
+      try {
+        const actualizado = await Hemocomponente.findByIdAndUpdate(
+          item.id,
+          { cantidad: item.cantidad },
+          { new: true, runValidators: true }
+        );
+
+        if (actualizado) {
+          resultados.push(actualizado);
+        } else {
+          errores.push({ id: item.id, mensaje: 'No encontrado' });
+        }
+      } catch (error) {
+        errores.push({ id: item.id, mensaje: error.message });
+      }
+    }
+
+    res.json({
+      actualizados: resultados.length,
+      fallidos: errores.length,
+      resultados,
+      errores
+    });
+  } catch (error) {
+    res.status(500).json({ mensaje: error.message });
+  }
+};
 module.exports = {
   crearHemocomponente,
   obtenerHemocomponentes,
@@ -102,5 +144,6 @@ module.exports = {
   actualizarHemocomponente,
   eliminarHemocomponente,
   obtenerPorCategoria,
-  obtenerBajoStock
+  obtenerBajoStock,
+  actualizarStockMasivo
 };

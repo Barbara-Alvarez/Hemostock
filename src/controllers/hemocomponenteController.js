@@ -64,10 +64,43 @@ const eliminarHemocomponente = async (req, res) => {
   }
 };
 
+// GET /hemocomponentes/categoria/:categoria
+const obtenerPorCategoria = async (req, res) => {
+  try {
+    const hemocomponentes = await Hemocomponente.find({
+      tipo: req.params.categoria
+    });
+    res.json(hemocomponentes);
+  } catch (error) {
+    res.status(500).json({ mensaje: error.message });
+  }
+};
+
+// GET /hemocomponentes/bajo-stock/:cantidad
+const obtenerBajoStock = async (req, res) => {
+  try {
+    const limite = Number(req.params.cantidad);
+
+    if (isNaN(limite)) {
+      return res.status(400).json({ mensaje: 'La cantidad debe ser un número' });
+    }
+
+    const hemocomponentes = await Hemocomponente.find({
+      cantidad: { $lt: limite }
+    });
+
+    res.json(hemocomponentes);
+  } catch (error) {
+    res.status(500).json({ mensaje: error.message });
+  }
+};
+
 module.exports = {
   crearHemocomponente,
   obtenerHemocomponentes,
   obtenerHemocomponentePorId,
   actualizarHemocomponente,
-  eliminarHemocomponente
+  eliminarHemocomponente,
+  obtenerPorCategoria,
+  obtenerBajoStock
 };
